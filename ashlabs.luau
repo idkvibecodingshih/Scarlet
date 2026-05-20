@@ -501,6 +501,150 @@ function Library:CreateWindow(cfg)
                 end)
             end
 
+
+            --// SLIDER
+            
+            function Elements:CreateSlider(text,min,max,default,callback)
+            
+                callback = callback or function() end
+            
+                local Value = default or min
+                local Dragging = false
+            
+                local Slider = Create("Frame",{
+                    Parent = Holder,
+                    BackgroundColor3 = Theme.CardHover,
+                    Size = UDim2.new(1,0,0,52),
+                    BorderSizePixel = 0
+                })
+            
+                Create("UICorner",{
+                    Parent = Slider,
+                    CornerRadius = UDim.new(0,10)
+                })
+            
+                local Title = Create("TextLabel",{
+                    Parent = Slider,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0,12,0,0),
+                    Size = UDim2.new(1,-60,0,24),
+                    Font = Enum.Font.GothamMedium,
+                    Text = text,
+                    TextColor3 = Theme.Text,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                })
+            
+                local ValueLabel = Create("TextLabel",{
+                    Parent = Slider,
+                    BackgroundTransparency = 1,
+                    AnchorPoint = Vector2.new(1,0),
+                    Position = UDim2.new(1,-12,0,0),
+                    Size = UDim2.new(0,50,0,24),
+                    Font = Enum.Font.GothamBold,
+                    Text = tostring(Value),
+                    TextColor3 = Theme.Accent,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Right
+                })
+            
+                local Bar = Create("Frame",{
+                    Parent = Slider,
+                    BackgroundColor3 = Theme.Background,
+                    Position = UDim2.new(0,12,0,32),
+                    Size = UDim2.new(1,-24,0,6),
+                    BorderSizePixel = 0
+                })
+            
+                Create("UICorner",{
+                    Parent = Bar,
+                    CornerRadius = UDim.new(1,0)
+                })
+            
+                local Fill = Create("Frame",{
+                    Parent = Bar,
+                    BackgroundColor3 = Theme.Accent,
+                    Size = UDim2.new((Value - min)/(max - min),0,1,0),
+                    BorderSizePixel = 0
+                })
+            
+                Create("UICorner",{
+                    Parent = Fill,
+                    CornerRadius = UDim.new(1,0)
+                })
+            
+                local Circle = Create("Frame",{
+                    Parent = Fill,
+                    AnchorPoint = Vector2.new(1,0.5),
+                    Position = UDim2.new(1,0,0.5,0),
+                    Size = UDim2.new(0,14,0,14),
+                    BackgroundColor3 = Color3.new(1,1,1),
+                    BorderSizePixel = 0
+                })
+            
+                Create("UICorner",{
+                    Parent = Circle,
+                    CornerRadius = UDim.new(1,0)
+                })
+            
+                local function Update(input)
+            
+                    local SizeScale = math.clamp(
+                        (input.Position.X - Bar.AbsolutePosition.X)
+                        / Bar.AbsoluteSize.X,
+                        0,
+                        1
+                    )
+            
+                    local NewValue = math.floor(
+                        ((max - min) * SizeScale) + min
+                    )
+            
+                    Value = NewValue
+            
+                    Tween(Fill,{
+                        Size = UDim2.new(SizeScale,0,1,0)
+                    },0.08)
+            
+                    ValueLabel.Text = tostring(NewValue)
+            
+                    callback(NewValue)
+                end
+            
+                Circle.InputBegan:Connect(function(input)
+            
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        Dragging = true
+                    end
+                end)
+            
+                UIS.InputEnded:Connect(function(input)
+            
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        Dragging = false
+                    end
+                end)
+            
+                UIS.InputChanged:Connect(function(input)
+            
+                    if Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        Update(input)
+                    end
+                end)
+            
+                Bar.InputBegan:Connect(function(input)
+            
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            
+                        Ripple(Slider)
+            
+                        Update(input)
+                    end
+                end)
+            
+                callback(Value)
+            end
+
             --// LABEL
 
             function Elements:CreateLabel(text)
